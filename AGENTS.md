@@ -95,5 +95,9 @@
 * **Node.js (nvm) パスの読み込み問題:**
   * 非インタラクティブなシェル（AIエージェントのコマンド実行環境やCI/CDなど）では、ユーザーの `.bashrc` 等に書かれた nvm のパス設定がロードされず、`node` や `npm` が `command not found` になることがあります。
   * その場合、コマンドの実行前に明示的に nvm の初期化スクリプトをロードする必要があります。
-  * 例: `. /home/ktsubota22/.nvm/nvm.sh && npm run dev`
-
+  * 例: `. $HOME/.nvm/nvm.sh && npm run dev`
+- **Emscripten (emcc) のインストールとパス設定:** `emcc` がシステムにインストールされていない、もしくは `PATH` に含まれず、`which emcc` が見つからずビルドが失敗した。 → `.nvm` 経由でシェルを初期化し、`source /usr/local/emsdk/emsdk_env.sh` を実行して環境変数を設定する必要がある。
+- **WASM SIMD 対応ブラウザの確認:** Safari や一部モバイルブラウザが SIMD をサポートしていないため、`YaneuraOu.wasm` の `sse42` ビルドが動作しないケースが発生。 → フォールバックとして `nosimd` ビルドを用意し、`crossOriginIsolated` が false の場合は自動で切り替えるロジックを実装した。
+- **GitHub Pages の COOP/COEP ヘッダー設定:** カスタムヘッダーが設定できないことから、`coi-serviceworker` を導入し、`service-worker.js` でヘッダー付与をエミュレートする必要があった。
+- **Node.js バージョンの不一致:** プロジェクトが要求する Node.js 14.x 系と、ユーザー環境の Node.js 18.x が衝突し、`npm install` が失敗するケースがあった。 → `.nvmrc` ファイルを追加し、推奨バージョン (14.21.3) を明示的に指定した。
+- **Large WASM ファイルのキャッシュ:** 初回ロードで数十MB の WASM と nn.bin をダウンロードする際、ネットワークが不安定で途中失敗することがあった。 → IndexedDB にキャッシュし、失敗時は再取得ロジックを実装した。
